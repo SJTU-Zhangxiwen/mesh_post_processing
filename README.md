@@ -19,11 +19,3 @@ pip install pymeshlab
 4. **`repair_non_manifold_edges`**：修复非流形边。提供删除多余面或分离顶点两种模式，并自动补洞。
 5. **`simplify_mesh_without_texture`**：白模网格简化。用于在不改变整体形状的情况下，降低模型面数。
 6. **`simplify_mesh_with_texture`**：带贴图网格简化。在减面的同时保持纹理 UV 映射不丢失。
-
-
-
-项目中附带了 `data_for_test` 文件夹，包含了以下测试用模型，供快速验证脚本功能及性能测试：
-
-- **`mesh_without_texture.obj`**：约 30 万面的纯白模数据，适合用来测试基础清理、修复和白模减面功能。
-- **`mesh_with_texture.obj`**：约 30 万面的带贴图模型数据。*(注意：同目录下需包含对应的 `.mtl` 和 `.jpg/.png` 贴图文件才能正确读取纹理)*，专门用于测试 `simplify_mesh_with_texture` 功能。
-- **`mesh_without_texture_3.5m_faces.obj`**：约 350 万面的高精度纯白模数据，数据量较大。
