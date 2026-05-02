@@ -40,6 +40,6 @@ def align_axis(input_mesh_path, output_mesh_path):
 
 if __name__ == "__main__":
     align_axis(
-        input_mesh_path="data_for_test/mesh_without_texture.obj",
+        input_mesh_path="input.obj",
         output_mesh_path="output_principal_axis.obj",
     )

@@ -1,6 +1,7 @@
-import pymeshlab
 import os
 import time
+
+import pymeshlab
 
 
 def _postprocess_after_poisson(ms: pymeshlab.MeshSet) -> None:
@@ -35,7 +36,10 @@ def _postprocess_after_poisson(ms: pymeshlab.MeshSet) -> None:
     ms.compute_normal_per_face()
     ms.compute_normal_per_vertex()
 
-def clean_and_decimate_mesh(input_path: str, output_path: str, target_face_num: int = 1000000):
+
+def clean_and_decimate_mesh(
+    input_path: str, output_path: str, target_face_num: int = 1000000
+):
     """
     对带纹理的原始 Mesh 进行拓扑清洗与减面，并安全导出保留纹理的 obj 文件
     默认目标面片数设为 100w，以平衡仿真器性能与几何细节。
@@ -65,29 +69,27 @@ def clean_and_decimate_mesh(input_path: str, output_path: str, target_face_num: 
     ms.meshing_remove_selected_faces()
 
     print("[6/10] 处理 T-型接头 (合并极近顶点)")
-    ms.meshing_merge_close_vertices(
-        threshold=pymeshlab.PercentageValue(0.1)
-    )
+    ms.meshing_merge_close_vertices(threshold=pymeshlab.PercentageValue(0.1))
 
     print("[7/10] 填补破洞，封闭平滑表面")
     ms.meshing_close_holes(maxholesize=100)
 
     print(f"[8/10] 减面 (目标面数: {target_face_num})")
-    #voxelsize 越小，保留的细节越多。0.1% - 0.3% 是精细重构的黄金值。
+    # voxelsize 越小，保留的细节越多。0.1% - 0.3% 是精细重构的黄金值。
     print("poisson重构")
     ms.generate_surface_reconstruction_screened_poisson(
-        depth=11,               # 建议 10-12
-        fulldepth=2,           # 保持根节点的完整性
-        samplespernode=1.5,     # 较低的值（1.0-2.0）能更好地拟合原始点细节
-        pointweight=4.0,        # 增加点权重，让生成的表面更贴合原始点云
-        preclean=True           # 重建前自动清理一些微小干扰
+        depth=11,  # 建议 10-12
+        fulldepth=2,  # 保持根节点的完整性
+        samplespernode=1.5,  # 较低的值（1.0-2.0）能更好地拟合原始点细节
+        pointweight=4.0,  # 增加点权重，让生成的表面更贴合原始点云
+        preclean=True,  # 重建前自动清理一些微小干扰
     )
 
     print("执行高保真减面")
     ms.meshing_decimation_quadric_edge_collapse(
         targetfacenum=target_face_num,
         preservenormal=True,
-        planarweight=0.1,          # 调高平面权重，降低大平面的细节，增加连接处细节
+        planarweight=0.1,  # 调高平面权重，降低大平面的细节，增加连接处细节
         boundaryweight=0.5,
     )
 
@@ -99,20 +101,21 @@ def clean_and_decimate_mesh(input_path: str, output_path: str, target_face_num: 
     print(f"导出模型: {output_path}")
     ms.save_current_mesh(
         output_path,
-        save_wedge_texcoord=True, 
-        save_wedge_normal=True,      
-        save_textures=True        
+        save_wedge_texcoord=True,
+        save_wedge_normal=True,
+        save_textures=True,
     )
     print("Down!")
 
+
 if __name__ == "__main__":
     start_time = time.time()
-    input_obj_file = "E:/SJTU/study/cs/Standard Concept Template Library/Mesh_Segmentation/Box/batch_01_0020_Box_001_shoe/texture/Mesh/high/texture.obj"
-    output_obj_file = "E:/SJTU/study/cs/Standard Concept Template Library/Mesh_Segmentation/Box/batch_01_0020_Box_001_shoe/texture/Mesh/high/texture_processed_without_decimation_clustering.obj"
+    input_obj_file = "input.obj"
+    output_obj_file = "output_processed.obj"
 
     # input_obj_file = "E:/SJTU/study/cs/Standard Concept Template Library/Mesh_Segmentation/high/high/xiangji1.obj"
     # output_obj_file = "E:/SJTU/study/cs/Standard Concept Template Library/Mesh_Segmentation/high/high/xiangji1_processed.obj"
-    
+
     clean_and_decimate_mesh(input_obj_file, output_obj_file)
     end_time = time.time()
     print(f"Time: {end_time - start_time:.2f} seconds")
