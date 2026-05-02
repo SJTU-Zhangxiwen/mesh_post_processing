@@ -1,4 +1,4 @@
-﻿# 3D Mesh Post-Processing Scripts
+# 3D Mesh Post-Processing Scripts
 
 基于 `pymeshlab` 的一组 Python 脚本，用于处理 3D 网格与点云常见问题，包括：
 
@@ -8,7 +8,7 @@
 - 白模/带纹理模型减面
 - 主惯性轴对齐
 
-项目当前主要包含 3 个脚本，分别面向通用处理、完整清洗流程和主轴对齐示例。
+项目当前主要包含 4 个脚本，分别面向通用处理、完整清洗流程、主轴对齐示例，以及矩阵逆变换工具。
 
 ## 仓库结构
 
@@ -17,15 +17,16 @@ mesh_post_processing/
 ├─ post_processing.py
 ├─ mesh_clean_process.py
 ├─ principal_axis.py
-└─ readme.md
+├─ post_transformation.py
+└─ README.md
 ```
 
 ## 环境依赖
 
-建议使用 Python 3 环境，并安装 `pymeshlab`：
+建议使用 Python 3 环境，并安装 `pymeshlab` 和 `numpy`：
 
 ```bash
-pip install pymeshlab
+pip install pymeshlab numpy
 ```
 
 ## 文件说明
@@ -114,6 +115,25 @@ clean_and_decimate_mesh(
 - 在后处理前统一模型朝向
 - 将模型对齐到主惯性轴，便于后续分析或批处理
 
+### `post_transformation.py`
+
+用于“矩阵求逆 + 网格逆变换”的工具脚本，核心功能包括：
+
+- `post_transformation`：读取矩阵 txt，计算逆矩阵并写出
+- `inverse_transform_mesh_by_matrix_txt`：读取 4x4 矩阵 txt，将矩阵应用到 mesh 并导出
+- `inverse_transform_pipeline`：综合 pipeline（输入 `input_mat` + `input_obj`），自动完成矩阵求逆与 mesh 逆变换
+
+矩阵文本格式说明：
+
+- 每行一行数值，使用空格或逗号分隔
+- 支持空行
+- 用于 mesh 变换时要求矩阵为 `4x4`
+
+纹理模型支持说明：
+
+- 逆变换本身不会破坏 UV/纹理坐标
+- 若输入为带纹理 OBJ，请确保 `.mtl` 与贴图文件路径可用，并在保存时开启 `save_textures/save_wedge_texcoord`
+
 ## 快速使用
 
 ### 1. 白模默认流程
@@ -168,6 +188,23 @@ align_axis(
 )
 ```
 
+### 5. 矩阵求逆 + mesh 逆变换（综合 pipeline）
+
+```python
+from post_transformation import inverse_transform_pipeline
+
+inv_mat_path, inv_obj_path = inverse_transform_pipeline(
+    input_mat="transform.txt",
+    input_obj="aligned.obj",
+    output_inv_mat="transform.inv.txt",
+    output_inv_obj="aligned.inv.obj",
+    freeze=True,
+    compose=False,
+)
+print(inv_mat_path)
+print(inv_obj_path)
+```
+
 ## 直接运行脚本
 
 三个脚本都保留了 `__main__` 示例，可直接运行：
@@ -176,6 +213,7 @@ align_axis(
 python post_processing.py
 python mesh_clean_process.py
 python principal_axis.py
+python post_transformation.py
 ```
 
 运行前建议先将脚本底部示例中的输入输出路径改成你自己的文件路径。

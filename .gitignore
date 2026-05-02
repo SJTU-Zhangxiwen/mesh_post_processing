@@ -1,0 +1,4 @@
+__pycache__/
+*.pyc
+data_for_test/
+tmp_*
